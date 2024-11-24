@@ -185,14 +185,18 @@ app.post('/sign-in', async (req, res) => {
     }
 });
 
-app.get('/data', async (req, res) => {
+app.get('/data', checkSignIn, async (req, res) => {
     try {
-        const token = req.headers.authorization;
+        const token = req.headers['authorization'];
         const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
 
         const user = await prisma.customer.findUnique({
-            where: { id: decoded.id },
-            select: { fullname: true },
+            where: { 
+                id: decoded.id 
+            },
+            select: { 
+                fullname: true 
+            }
         });
 
         if (!user) {
