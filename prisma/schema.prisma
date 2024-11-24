@@ -37,6 +37,7 @@ model Product {
   name           String
   cost           Int
   price          Int
+  description    String
   img            String
   status         String           @default("use")
   BillSaleDetail BillSaleDetail[]
