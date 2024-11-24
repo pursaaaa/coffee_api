@@ -187,12 +187,11 @@ app.post('/sign-in', async (req, res) => {
 
 app.get('/data', checkSignIn, async (req, res) => {
     try {
-        const token = req.headers['authorization'];
-        const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+        const userId = getUserId(req, res);
 
         const user = await prisma.customer.findUnique({
             where: { 
-                id: decoded.id 
+                id: userId
             },
             select: { 
                 fullname: true 
