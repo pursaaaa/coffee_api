@@ -40,6 +40,26 @@ app.get('/list', async (req, res) => {
     }
 })
 
+app.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        congst product = await prisma.product.findUnique({
+            where: {
+                id: parseInt(id)
+            }
+        });
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found!'});
+        }
+
+        res.status(200).json({ product })
+    } catch (e) {
+        res.status(500).send({ error: e.message})
+    }
+})
+
 app.delete('/remove/:id', async (req, res) => {
     try {
         await prisma.product.update({
