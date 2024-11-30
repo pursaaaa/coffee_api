@@ -44,7 +44,7 @@ app.get('/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
-        congst product = await prisma.product.findUnique({
+        const product = await prisma.product.findUnique({
             where: {
                 id: parseInt(id)
             }
