@@ -185,6 +185,65 @@ app.post('/sign-in', async (req, res) => {
     }
 });
 
+app.post('/changePassword', async (req, res) => {
+    const { email, currentPassword, newPassword } = req.body;
+
+    try {
+        const user = await prisma.customer.findUnique({
+            where: {
+                email: email
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found!' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect current password'})
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+        await prisma.customer.update({
+            where: {
+                email: email
+            },
+            data: {
+                password: hashedNewPassword
+            }
+        })
+
+        res.send({ message: 'Change password successful!' });
+    } catch (e) {
+        res.status(500).send({ error: e.message })
+    }
+});
+
+app.post('/checkEmail', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await prisma.customer.findUnique({
+            where: {
+                email: email
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'ไม่พบอีเมลนี้ในระบบ' });
+        }
+        
+        res.status(200).json({ message: 'Email found!' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
 app.get('/data', checkSignIn, async (req, res) => {
     try {
         const userId = getUserId(req, res);
