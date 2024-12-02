@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer')
 
 dotenv.config();
 
@@ -34,6 +35,36 @@ function getUserId(req, res) {
     } catch (e) {
         res.status(500).send({ error: e.message });
     }
+}
+
+function sendmail(toemail, subject, html) {
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com', //simple mail tranfer protocal
+        service: 'gmail',
+        auth: {
+            user: 'outhailnw@gmail.com',   // your email
+            pass: 'jqwe ptdn qjep gcfs'    // app password from gmail
+        }
+    });
+
+    // send mail with defined transport object
+    let mailOptions = {
+        from: '"Coffee Shop" <coffee.shop5768@gmail.com>',  // sender address
+        to: toemail,    // list of receivers
+        subject: subject,   // Subject line
+        html: html     // html mail body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+            res.send('เกิดข้อผิดพลาด ไม่สามารถส่งอีเมลได้ โปรดลองใหม่ภายหลัง');
+        }
+        else {
+            console.log("Send email successful");
+        }
+    });
 }
 
 app.post('/signIn', async (req, res) => {
@@ -185,41 +216,53 @@ app.post('/sign-in', async (req, res) => {
     }
 });
 
-app.post('/changePassword', async (req, res) => {
-    const { email, currentPassword, newPassword } = req.body;
+app.post('/forgetPassword', async (req, res) => {
+    const { email } = req.body;
 
     try {
         const user = await prisma.customer.findUnique({
             where: {
                 email: email
             }
-        })
+        });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found!' });
         }
 
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        // Generate a random password
+        let randomPassword = Math.random().toString(36).substring(2, 10);
 
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Incorrect current password'})
-        }
+        // Hash the random password using bcrypt
+        const salt = await bcrypt.genSalt(10); // You can increase the salt rounds for stronger encryption
+        const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-
+        // Update the user's password in the database
         await prisma.customer.update({
-            where: {
-                email: email
+            where: { 
+                email: email 
             },
-            data: {
-                password: hashedNewPassword
+            data: { 
+                password: hashedPassword 
             }
-        })
+        });
 
-        res.send({ message: 'Change password successful!' });
+        // Send email with the new password
+        const subject = "รหัสผ่านของคุณมีการเปลี่ยนแปลง";
+        const html = `
+            สวัสดี คุณ ${user.email}<br><br>
+            &nbsp;&nbsp;รหัสผ่านเว็บไซต์ CoffeeShop ของคุณมีการเปลี่ยนแปลงตามที่คุณร้องขอ<br>
+            รหัสผ่านใหม่ของคุณ คือ &nbsp;${randomPassword}<br>
+            ให้ใช้รหัสผ่านนี้ในการเข้าสู่ระบบ และคุณสามารถเปลี่ยนแปลงรหัสผ่านของคุณได้หลังจากเข้าสู่ระบบแล้ว<br><br><br>
+            ขอบคุณ<br>NodeLoginX
+        `;
+        sendmail(user.email, subject, html);
+
+        res.status(200).json({ message: 'รีเซ็ตรหัสผ่านสำเร็จ โปรดตรวจสอบกล่องข้อความภายในอีเมล' });
+
     } catch (e) {
-        res.status(500).send({ error: e.message })
+        console.error(e.message);
+        res.status(500).send({ error: e.message });
     }
 });
 
@@ -236,7 +279,7 @@ app.post('/checkEmail', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'ไม่พบอีเมลนี้ในระบบ' });
         }
-        
+
         res.status(200).json({ message: 'Email found!' });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -249,11 +292,11 @@ app.get('/data', checkSignIn, async (req, res) => {
         const userId = getUserId(req, res);
 
         const user = await prisma.customer.findUnique({
-            where: { 
+            where: {
                 id: userId
             },
-            select: { 
-                fullname: true 
+            select: {
+                fullname: true
             }
         });
 
