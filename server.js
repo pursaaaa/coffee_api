@@ -8,9 +8,15 @@ const userController = require('./controllers/UserController');
 const productController = require('./controllers/ProductController');
 const saleController = require('./controllers/SaleController');
 
+const corsOptions = {
+    origin: ['http://localhost:3000', 'https://coffee-front.onrender.com'], // Frontend URLs
+    credentials: true,
+};
+app.use(cors(corsOptions));
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors());
 app.use('/uploads', express.static('uploads'));
 
 app.use('/user', userController);
