@@ -9,7 +9,7 @@ const productController = require('./controllers/ProductController');
 const saleController = require('./controllers/SaleController');
 
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://coffee-front.onrender.com', 'https://coffee-backoffice.onrender.com'], // Frontend URLs
+    origin: ['http://localhost:3000', 'https://coffee-backoffice.onrender.com'], // Frontend URLs
     credentials: true,
 };
 app.use(cors(corsOptions));
