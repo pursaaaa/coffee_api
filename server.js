@@ -8,10 +8,23 @@ const userController = require('./controllers/UserController');
 const productController = require('./controllers/ProductController');
 const saleController = require('./controllers/SaleController');
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://coffee-front.onrender.com',
+    'https://coffee-backoffice.onrender.com',
+];
+
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://coffee-backoffice.onrender.com'], // Frontend URLs
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 };
+
 app.use(cors(corsOptions));
 
 
