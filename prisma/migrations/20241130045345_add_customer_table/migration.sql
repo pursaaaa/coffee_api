@@ -1,3 +1,12 @@
+/*
+  Warnings:
+
+  - Added the required column `description` to the `Product` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN     "description" TEXT NOT NULL;
+
 -- CreateTable
 CREATE TABLE "Customer" (
     "id" SERIAL NOT NULL,
@@ -5,7 +14,7 @@ CREATE TABLE "Customer" (
     "lastname" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "usename" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -16,4 +25,4 @@ CREATE TABLE "Customer" (
 CREATE UNIQUE INDEX "Customer_email_key" ON "Customer"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Customer_usename_key" ON "Customer"("usename");
+CREATE UNIQUE INDEX "Customer_username_key" ON "Customer"("username");
